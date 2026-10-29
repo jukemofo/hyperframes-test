@@ -42,7 +42,6 @@ export const Player = forwardRef<PlayerRef, PlayerProps>(
         fps: fps,
         durationInFrames: durationInFrames,
       });
-      console.log("call");
     }, [width, height, fps, durationInFrames]);
 
     // --- Loop Engine ---

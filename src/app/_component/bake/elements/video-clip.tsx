@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useFrame, usePlayerConfig } from "../player/hooks";
 import { getScaleObjectContain } from "../utils/resolution";
 import { useVideoDecoder } from "./hook";
+import { toTime } from "../utils/time";
 
 export const VideoClip = ({
   src,
@@ -20,16 +21,18 @@ export const VideoClip = ({
   const [texture, setTexture] = useState<Texture>(Texture.EMPTY);
   const { app, isInitialised } = useApplication();
 
-  const { getFrame, width, height, isLoading } = useVideoDecoder({ src });
+  const { getFrame, getFirstFrameFromQueue, width, height, isLoading } =
+    useVideoDecoder({ src });
 
   const config = usePlayerConfig();
-
-  console.log(config);
 
   useEffect(() => {
     if (texture === Texture.EMPTY && isInitialised && !isLoading) {
       const load = async () => {
-        const value = await getFrame(trimStart);
+        let value = await getFrame(toTime(trimStart, config.fps));
+        if (!value) {
+          value = getFirstFrameFromQueue();
+        }
         const appWidth = app.screen.width;
         const appHeight = app.screen.height;
         const canvas = document.createElement("canvas");
@@ -59,7 +62,7 @@ export const VideoClip = ({
 
       load();
     }
-  }, [texture, isInitialised, isLoading, trimStart]);
+  }, [texture, isInitialised, isLoading, trimStart, config.fps]);
 
   useFrame(async (frame) => {
     if (frame.frame)
@@ -68,10 +71,9 @@ export const VideoClip = ({
         return;
       }
 
-    const currentTime = frame.frame / frame.fps;
-    const elapsed = currentTime - from;
-    const currentSourceTime = elapsed + trimStart;
-    const value = await getFrame(currentSourceTime);
+    const elapsed = frame.frame - from;
+    const currentSourceFrame = elapsed + trimStart;
+    const value = await getFrame(currentSourceFrame / frame.fps);
 
     if (!value) {
       return;

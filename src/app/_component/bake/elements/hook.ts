@@ -125,5 +125,11 @@ export function useVideoDecoder({
     [refill],
   );
 
-  return { getFrame, width, height, isLoading };
+  const getFirstFrameFromQueue = useCallback(() => {
+    if (queueRef.current.length === 0) return null;
+
+    return queueRef.current[0];
+  }, []);
+
+  return { getFrame, getFirstFrameFromQueue, width, height, isLoading };
 }
