@@ -1,3 +1,6 @@
 allowBuilds:
+  '@revideo/telemetry': false
+  esbuild: false
+  puppeteer: false
   sharp: false
   unrs-resolver: false

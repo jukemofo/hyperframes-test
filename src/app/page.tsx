@@ -1,69 +1,47 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { Graphics, Text } from "pixi.js";
+import { Player } from "./_component/bake/player";
+import { KaraokeCaption } from "./_component/karaoke-caption";
+import { VideoClip } from "./_component/bake/elements/video-clip";
+
+function drawChicken(g: Graphics, x: number, y: number) {
+  g.clear();
+
+  const cx = 100;
+  const cy = 100;
+  const radius = 65;
+  const width = 28;
+
+  g.arc(cx, cy, radius, -2.35, -0.78).stroke({ color: 0xea4335, width });
+
+  g.arc(cx, cy, radius, -0.78, 0.78).stroke({ color: 0x4285f4, width });
+
+  g.arc(cx, cy, radius, 0.78, 2.35).stroke({ color: 0xfbbc05, width });
+
+  g.arc(cx, cy, radius, 2.35, 3.93).stroke({ color: 0x34a853, width });
+
+  g.rect(cx, cy - width / 2, radius + 4, width).fill(0x4285f4);
+
+  g.x = x;
+  g.y = y;
+}
+
+export default function HyperFramesStudioPreview() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="w-full h-full flex items-center justify-center flex-col">
+      <div className="w-200 aspect-video bg-black overflow-hidden flex items-center justify-center">
+        <Player width={1920} height={1080} fps={60} durationInFrames={6000}>
+          {/* <pixiGraphics
+            draw={(graphics) => {
+              drawChicken(graphics, 200, 200);
+            }}
+          /> */}
+          <VideoClip src="https://pub-decf4c7e971344158c01d31cc955c10f.r2.dev/How%20To%20Animate%20Your%20Own%20Custom%20Characters%20in%20Premiere%20Pro!%20-%20finzar%20(1080p%2C%20h264).mp4" />
+        </Player>
+      </div>
+
+      <button onClick={async () => {}}>Render</button>
+    </main>
   );
 }
