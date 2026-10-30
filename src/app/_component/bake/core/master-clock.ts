@@ -53,7 +53,6 @@ export class MasterClock {
   private applyGain() {
     if (!this.masterGainNode) return;
     const actualVolume = this._isMuted ? 0 : this._volume;
-    // Đường cong hàm mũ bậc 2 mô phỏng độ cảm nhận âm thanh logarit của tai người
     this.masterGainNode.gain.value = actualVolume ** 2;
   }
 

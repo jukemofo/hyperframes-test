@@ -1,9 +1,9 @@
 import { useApplication } from "@pixi/react";
 import { CanvasSource, Sprite, Texture } from "pixi.js";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useFrame, usePlayerConfig } from "../player/hooks";
 import { getScaleObjectContain } from "../utils/resolution";
-import { useVideoDecoder } from "./hook";
+import { useVideoDecoder } from "./use-video-decoder";
 import { toTime } from "../utils/time";
 
 export const VideoClip = ({
@@ -21,8 +21,15 @@ export const VideoClip = ({
   const [texture, setTexture] = useState<Texture>(Texture.EMPTY);
   const { app, isInitialised } = useApplication();
 
-  const { getFrame, getFirstFrameFromQueue, width, height, isLoading } =
-    useVideoDecoder({ src });
+  const {
+    getFrame,
+    getFirstFrameFromQueue,
+    seek,
+    width,
+    height,
+    isLoading,
+    isBuffering,
+  } = useVideoDecoder({ src });
 
   const config = usePlayerConfig();
 
@@ -57,7 +64,6 @@ export const VideoClip = ({
         spriteRef.current?.position.set(appWidth / 2, appHeight / 2);
 
         texture.source.update();
-        console.log("Đã vẽ ảnh chú chó lên canvas và cập nhật PixiJS!");
       };
 
       load();
@@ -65,26 +71,38 @@ export const VideoClip = ({
   }, [texture, isInitialised, isLoading, trimStart, config.fps]);
 
   useFrame(async (frame) => {
-    if (frame.frame)
-      if (frame.isSeeking) {
-        // TODO: handle seek here
-        return;
-      }
-
     const elapsed = frame.frame - from;
     const currentSourceFrame = elapsed + trimStart;
-    const value = await getFrame(currentSourceFrame / frame.fps);
+    const currentSourceTime = toTime(currentSourceFrame, frame.fps);
+    if (frame.isSeeking) {
+      const frameCanvas = await seek(currentSourceTime, frame.isHighQuality);
+      if (frameCanvas) {
+        draw(frameCanvas);
+      }
+      return;
+    }
 
+    const value = await getFrame(currentSourceTime);
     if (!value) {
       return;
     }
-    const canvas = canvasRef.current!;
-    const ctx = canvas.getContext("2d");
-    ctx?.clearRect(0, 0, canvas.width, canvas.height);
-    ctx!.drawImage(value.canvas, 0, 0, canvas.width, canvas.height);
 
-    texture.source.update();
+    draw(value.canvas);
   });
+
+  const draw = useCallback(
+    (canvasEl: HTMLCanvasElement | OffscreenCanvas) => {
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        return;
+      }
+      const ctx = canvas.getContext("2d")!;
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
+      ctx!.drawImage(canvasEl, 0, 0, canvas.width, canvas.height);
+      texture.source.update();
+    },
+    [texture],
+  );
 
   return <pixiSprite ref={spriteRef} texture={texture} anchor={0.5} />;
 };
